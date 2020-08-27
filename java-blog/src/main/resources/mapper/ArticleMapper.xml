@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lhy.blog.mapper.ArticleMapper">
+
+    <update id="admireByArticleId">
+        update
+            article
+        set
+            admire = admire + #{flag}
+        where
+            id = #{id}
+    </update>
+
+    <update id="viewArticleById">
+        update
+            article
+        set
+            views = views + 1
+        where
+            id = #{id}
+    </update>
+
+    <select id="dynamicSearch" resultType="com.lhy.blog.entity.Article" parameterType="com.lhy.blog.dto.QueryDto">
+        select t1.id, t1.title, t1.summary, t1.type, t1.reward_able, t1.comment_able, t1.recommend_able,
+        t1.is_top, t1.views, t1.admire, t1.picture, t1.create_time, t1.update_time
+        from article t1
+        <if test="query.categoryId != null and query.categoryId != ''">
+            right join (
+                select * from category_article where category_id = #{query.categoryId}
+            ) t2 on t1.id = t2.article_id
+        </if>
+        where 1=1
+        <if test="query.year != null and query.year != ''">
+            and year(t1.create_time)=#{query.year}
+        </if>
+        <if test="query.month != null and query.month != ''">
+            and month(t1.create_time)=#{query.month}
+        </if>
+        <if test="query.type != null and query.type != ''">
+            and t1.type = #{query.type}
+        </if>
+        <if test="query.keyWords != null and query.keyWords != ''">
+            and t1.title like concat('%', #{query.keyWords}, '%')
+        </if>
+        order by is_top desc,
+        <if test="query.sortType == null">create_time desc</if>
+        <if test="query.sortType == 0">update_time desc</if>
+        <if test="query.sortType == 1">views desc</if>
+        <if test="query.sortType == 2">admire desc</if>
+    </select>
+
+    <select id="listByCategoryId" resultType="com.lhy.blog.entity.Article">
+        select t1.id, t1.title, t1.summary, t1.type, t1.reward_able, t1.comment_able, t1.recommend_able,
+        t1.is_top, t1.views, t1.admire, t1.picture, t1.create_time, t1.update_time
+        from article t1
+        right join (
+            select * from category_article where category_id = #{categoryId}
+        ) t2 on t1.id = t2.article_id
+        order by is_top desc, create_time desc
+    </select>
+
+    <select id="listDetailByCategoryId" resultType="com.lhy.blog.entity.Article">
+        select id, title, summary, type, reward_able, comment_able, recommend_able, is_top,
+        views, admire, picture, create_time, update_time, nickname, avatar, comments from (
+            select t3.id, t3.title, t3.summary, t3.type, t3.reward_able, t3.comment_able,
+            t3.recommend_able, t3.is_top, t3.views, t3.admire, t3.picture, t3.create_time,
+            t3.update_time, t4.nickname, t4.avatar from (
+                select * from article t1
+                right join (
+                    select article_id from category_article where category_id = #{categoryId}
+                ) t2 on t1.id = t2.article_id
+            ) t3, user t4
+            where t3.user_id = t4.id
+            order by t3.is_top desc, t3.create_time desc
+        ) t5
+        left join(
+            select article_id, count(*) as comments from comment
+            where article_id in (
+                select article_id from category_article where category_id = #{categoryId}
+            )
+            group by article_id
+        ) t6 on t5.id = t6.article_id
+    </select>
+
+    <select id="listByTagId" resultType="com.lhy.blog.entity.Article">
+        select t1.id, t1.title, t1.summary, t1.type, t1.reward_able, t1.comment_able, t1.recommend_able,
+        t1.is_top, t1.views, t1.admire, t1.picture, t1.create_time, t1.update_time
+        from article t1
+        right join (
+            select * from tag_article where category_id = #{tagId}
+        ) t2 on t1.id = t2.article_id
+        order by is_top desc, create_time desc
+    </select>
+
+    <select id="listDetailByTagId" resultType="com.lhy.blog.entity.Article">
+        select id, title, summary, type, reward_able, comment_able, recommend_able, is_top,
+        views, admire, picture, create_time, update_time, nickname, avatar, comments from (
+            select t3.id, t3.title, t3.summary, t3.type, t3.reward_able, t3.comment_able,
+            t3.recommend_able, t3.is_top, t3.views, t3.admire, t3.picture, t3.create_time,
+            t3.update_time, t4.nickname, t4.avatar from (
+                select * from article t1
+                right join (
+                    select article_id from tag_article where tag_id = #{tagId}
+                ) t2 on t1.id = t2.article_id
+            ) t3, user t4
+            where t3.user_id = t4.id
+            order by t3.is_top desc, t3.create_time desc
+        ) t5
+        left join(
+            select article_id, count(*) as comments from comment
+            where article_id in (
+                select article_id from tag_article where tag_id = #{tagId}
+            )
+            group by article_id
+        ) t6 on t5.id = t6.article_id
+    </select>
+
+    <select id="sumOfViewsByCategoryId" resultType="java.lang.Integer">
+        select sum(views) from article where id in
+        (
+            select article_id from category_article where category_id = #{categoryId}
+        )
+    </select>
+
+    <select id="sumOfViewsByTagId" resultType="java.lang.Integer">
+        select sum(views) from article where id in
+        (
+            select article_id from tag_article where tag_id = #{tagId}
+        )
+    </select>
+
+    <select id="sumOfViewsOfAllCategory" resultType="java.util.Map">
+        select category_id as categoryId, sum(views) as views from
+        (
+            select t1.views, t2.category_id
+            from article t1
+            left join
+            (
+                select category_id, article_id from category_article
+            ) t2 on t1.id = t2.article_id
+        ) t3
+        group by category_id
+    </select>
+
+    <select id="sumOfViewsOfAllTag" resultType="java.util.Map">
+        select tag_id as tagId, sum(views) as views from
+        (
+            select t1.views, t2.tag_id
+            from article t1
+            left join
+            (
+                select tag_id, article_id from tag_article
+            ) t2 on t1.id = t2.article_id
+        ) t3
+        group by tag_id
+    </select>
+
+    <select id="getHotArticleList" resultType="com.lhy.blog.entity.Article">
+        select
+        t1.id, t1.title, t1.summary, t1.views, t1.admire, t1.picture, t1.create_time as createTime,
+        t2.nickname, t2.avatar
+        from article t1, user t2
+        where t1.user_id = t2.id and t1.id in
+        (
+            select t3.id from
+            (
+                select * from article
+                order by views desc, create_time desc
+                limit #{size}
+            ) t3
+        )
+    </select>
+
+    <select id="getRecommendArticleList" resultType="com.lhy.blog.entity.Article">
+        select
+        t1.id, t1.title, t1.summary, t1.views, t1.admire, t1.picture, t1.create_time as createTime,
+        t2.nickname, t2.avatar
+        from article t1, user t2
+        where t1.user_id = t2.id and t1.id in
+        (
+            select t3.id from
+            (
+                select * from article where recommend_able = 1
+                order by views desc, create_time desc
+                limit #{size}
+            ) t3
+        )
+    </select>
+
+    <select id="getLatestArticleList" resultType="com.lhy.blog.entity.Article">
+        select
+        t1.id, t1.title, t1.summary, t1.views, t1.admire, t1.picture, t1.create_time as createTime,
+        t2.nickname, t2.avatar
+        from article t1, user t2
+        where t1.user_id = t2.id and t1.id in
+        (
+            select t3.id from
+            (
+                select * from article
+                order by create_time desc
+                limit #{size}
+            ) t3
+        )
+    </select>
+
+    <select id="getOneById" resultType="com.lhy.blog.entity.Article">
+        select t1.id, t1.title, t1.content, t1.summary, t1.type, t1.reward_able, t1.comment_able,
+        t1.recommend_able, t1.is_top, t1.views, t1.admire, t1.picture, t1.create_time, t1.update_time,
+        t2.nickname, t2.avatar
+        from article t1, user t2
+        where t1.id = #{id} and t1.user_id = t2.id
+    </select>
+
+    <select id="searchArticles" resultType="com.lhy.blog.entity.Article">
+        select
+            t1.id, t1.title, t1.summary, t1.views, t1.admire, t1.picture, t1.create_time as createTime,
+            t2.nickname, t2.avatar
+        from
+            article t1, user t2
+        where
+            t1.user_id = t2.id
+        and (
+            t1.title like concat('%', #{searchText}, '%')
+            or t1.content like concat('%', #{searchText}, '%'))
+    </select>
+
+</mapper>

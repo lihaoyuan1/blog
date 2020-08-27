@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lhy.blog.mapper.TagMapper">
+
+    <select id="selectByArticleId" resultType="com.lhy.blog.entity.Tag">
+        select t1.id, t1.tag_name from tag t1
+        right join (
+            select * from tag_article where article_id = #{articleId}
+        ) t2 on t1.id = t2.tag_id
+    </select>
+
+    <select id="countAllTagSize" resultType="java.util.Map">
+        select tag_id as tagId, count(article_id) as count
+        from tag_article
+        group by tag_id
+    </select>
+
+    <select id="countTagSize" resultType="java.lang.Integer">
+        select count(*) from tag_article where tag_id = #{tagId}
+    </select>
+
+</mapper>

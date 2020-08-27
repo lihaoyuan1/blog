@@ -1,0 +1,29 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /lhy-blog
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://139.224.252.53:3306/blog?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    username: lhy
+    password: lhy152342613
+
+  redis:
+    host: 139.224.252.53
+    port: 6379
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  type-aliases-package: com.lhy.blog.entity
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

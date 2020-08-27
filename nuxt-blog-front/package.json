@@ -1,0 +1,44 @@
+{
+  "name": "nuxt-blog-front",
+  "version": "1.0.0",
+  "description": "My luminous Nuxt.js project",
+  "author": "lihaoyuan",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
+  },
+  "dependencies": {
+    "@iktakahiro/markdown-it-katex": "^4.0.0",
+    "@nuxtjs/axios": "^5.11.0",
+    "element-ui": "^2.13.2",
+    "github-markdown-css": "^4.0.0",
+    "highlight.js": "^10.1.2",
+    "hls.js": "^0.13.2",
+    "markdown-it": "^11.0.0",
+    "markdown-it-abbr": "^1.0.4",
+    "markdown-it-deflist": "^2.0.3",
+    "markdown-it-footnote": "^3.0.2",
+    "markdown-it-mark": "^3.0.0",
+    "markdown-it-sub": "^1.0.0",
+    "markdown-it-sup": "^1.0.0",
+    "nuxt": "^2.0.0",
+    "qs": "^6.9.4",
+    "vue": "latest",
+    "vue-aplayer": "^1.6.1",
+    "vue-clap-button": "^1.0.5"
+  },
+  "devDependencies": {
+    "@nuxtjs/eslint-config": "^2.0.0",
+    "@nuxtjs/eslint-module": "^1.0.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^6.1.0",
+    "eslint-plugin-nuxt": ">=0.4.2",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1"
+  }
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lhy.blog.mapper.CategoryMapper">
+
+    <select id="selectByArticleId" resultType="com.lhy.blog.entity.Category">
+        select t1.id, t1.category_name, t1.description, t1.picture, t1.sequence from category t1
+        right join (
+            select * from category_article where article_id = #{articleId}
+        ) t2 on t1.id = t2.category_id
+    </select>
+
+    <select id="countCategorySize" resultType="java.lang.Integer">
+        select count(*) from category_article where category_id = #{categoryId}
+    </select>
+
+    <select id="countAllCategorySize" resultType="java.util.Map">
+        select category_id as categoryId, count(article_id) as count
+        from category_article
+        group by category_id
+    </select>
+
+</mapper>
