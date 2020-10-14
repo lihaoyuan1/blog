@@ -5,13 +5,8 @@
             <el-input placeholder="标题" v-model="article.title" style="width: calc(100% - 183px);" />
             <el-button type="primary" style="float: right;" @click="check1">发表文章</el-button>
         </div>
-        <div class="editor-container" id="editor-container">
-            <button v-if="iframeLoaded&&!fullScreen" class="edit-toolbar-btn" @click="handleFullScreen">
-                <full-screen />
-            </button>
-            <button v-if="iframeLoaded&&fullScreen" class="edit-toolbar-btn" @click="handleFullScreen">
-                <full-screen-exit />
-            </button>
+        <div class="editor-container">
+            <le-editor v-model="article.content" theme="mdn-like" hljs-css="atomOneDark" />
         </div>
         <el-dialog title="发布文章"
                    :visible.sync="dialogVisible"
@@ -121,14 +116,8 @@
 </template>
 
 <script>
-    import Stackedit from 'stackedit-js';
-    import FullScreen from '../components/icon/fullscreen';
-    import FullScreenExit from '../components/icon/fullscreen-exit';
     export default {
         name: "articleEdit",
-        components: {
-            FullScreen, FullScreenExit
-        },
         data () {
             return {
                 categoryList: [],
@@ -240,7 +229,7 @@
                 }
             },
             loadData () {
-                this.$emit('loadingStart', 6);
+                this.$emit('loadingStart', 5);
                 this.get('/category/allCategorySimple', {}).then(res => {
                     if (res.success) this.categoryList = res.data;
                     this.$emit('loadingComplete');
@@ -255,9 +244,6 @@
                     this.article.commentAble = this.article.commentAble === 1;
                     this.article.recommendAble = this.article.recommendAble === 1;
                     this.$emit('loadingComplete');
-                    this.timer = setTimeout(() => {
-                        this.initEdit();
-                    }, 500)
                 });
                 this.get('/article/categoryByArticleId', {id: this.articleId}).then(res => {
                     this.selectCategoryList = res.data;
@@ -269,35 +255,6 @@
                     this.$emit('loadingComplete');
                 })
             },
-            initEdit () {
-                let stackedit = new Stackedit();
-                stackedit.openFile({
-                    name: 'Filename',
-                    content: {
-                        text: this.article.content
-                    }
-                });
-                stackedit.on('fileChange', (file) => {
-                    this.article.content = file.content.text;
-                    if (!this.iframeLoaded){
-                        this.iframeLoaded = true;
-                    }
-                });
-                this.$emit('loadingComplete');
-            },
-            handleFullScreen () {
-                let root = document.getElementById('editor-container');
-                let classList = root.classList;
-                if (classList.contains('editor-container')){
-                    classList.remove('editor-container');
-                    classList.add('editor-container-fixed');
-                } else {
-                    classList.remove('editor-container-fixed');
-                    classList.add('editor-container')
-                }
-                root.classList = classList;
-                this.fullScreen = !this.fullScreen;
-            }
         },
         created() {
             this.loadData();
@@ -339,37 +296,5 @@
         position: relative;
         height: calc(100vh - 185px);
         border-radius: 4px;
-    }
-    .editor-container-fixed{
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 999;
-    }
-    .edit-toolbar-btn{
-        padding: 2px;
-        border: none;
-        font-size: 17px;
-        font-weight: 400;
-        background-color: #2c2c2c;
-        outline: none;
-        cursor: pointer;
-        position: absolute;
-        line-height: 0;
-        top: 2px;
-        left: 5px;
-    }
-    .edit-toolbar-btn svg{
-        fill: currentColor;
-        color: #b9b9b9;
-        transition: opacity .25s;
-        padding: 0 7px;
-        border-radius: 3px;
-    }
-    .edit-toolbar-btn:hover svg{
-        color: #fff;
-        background-color: hsla(0,0%,100%,.1);
     }
 </style>

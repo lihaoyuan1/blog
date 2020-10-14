@@ -5,13 +5,13 @@
             <el-input placeholder="标题" @change="handleSaveTitle" v-model="title" style="width: calc(100% - 183px)" />
             <el-button type="primary" style="float: right;" @click="check1">发表文章</el-button>
         </div>
-        <div class="editor-container" id="editor-container">
-            <button v-if="iframeLoaded&&!fullScreen" class="edit-toolbar-btn" @click="handleFullScreen">
-                <full-screen />
-            </button>
-            <button v-if="iframeLoaded&&fullScreen" class="edit-toolbar-btn" @click="handleFullScreen">
-                <full-screen-exit />
-            </button>
+        <div class="editor-container">
+            <le-editor
+                    v-model="content"
+                    theme="mdn-like"
+                    hljs-css="atomOneDark"
+                    :image-uploader="imageUploader"
+                    @save="handleSaveContent(content)" />
         </div>
         <el-dialog title="发布文章"
                    :visible.sync="dialogVisible"
@@ -120,13 +120,9 @@
 </template>
 
 <script>
-    import Stackedit from "stackedit-js";
-    import FullScreen from '../components/icon/fullscreen';
-    import FullScreenExit from '../components/icon/fullscreen-exit';
     export default {
         name: "editor",
         components: {
-            FullScreen, FullScreenExit
         },
         data () {
             return {
@@ -144,8 +140,14 @@
                 dialogVisible: false,
                 btnLoading: false,
                 btnDisabled: false,
-                fullScreen: false,
-                iframeLoaded: false
+                imageUploader: {
+                    custom: false,
+                    fileType: 'file',
+                    fileNameType: '',
+                    imagePrefix: 'http://47.100.125.98', // 图片前缀地址
+                    type: 'server',
+                    url: this.$uploadUrl // 接口地址
+                }
             }
         },
         methods: {
@@ -260,19 +262,6 @@
                         this.tagList = res.data;
                     this.$emit('loadingComplete');
                 })
-            },
-            handleFullScreen () {
-                let root = document.getElementById('editor-container');
-                let classList = root.classList;
-                if (classList.contains('editor-container')){
-                    classList.remove('editor-container');
-                    classList.add('editor-container-fixed');
-                } else {
-                    classList.remove('editor-container-fixed');
-                    classList.add('editor-container')
-                }
-                root.classList = classList;
-                this.fullScreen = !this.fullScreen;
             }
         },
         created() {
@@ -280,21 +269,6 @@
             this.title = this.loadStorage("article_title");
             let content = this.loadStorage("article_content");
             this.content = content == null ? '':content;
-        },
-        mounted() {
-            let stackedit = new Stackedit();
-            stackedit.openFile({
-                name: 'Filename',
-                content: {
-                    text: this.content
-                }
-            });
-            stackedit.on('fileChange', (file) => {
-                this.content = file.content.text;
-                if (!this.iframeLoaded){
-                    this.iframeLoaded = true;
-                }
-            });
         },
         watch: {
             content (value) {
@@ -334,5 +308,10 @@
     }
     .el-dialog__footer{
         padding-top: 0 !important;
+    }
+    .editor-container{
+        position: relative;
+        height: calc(100vh - 185px);
+        border-radius: 4px;
     }
 </style>

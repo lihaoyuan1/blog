@@ -5,6 +5,7 @@ import './plugins/axios'
 import './plugins/element'
 import './plugins/good-storage'
 import './plugins/echarts'
+import './plugins/le-markdown-editor'
 
 Vue.config.productionTip = false;
 
